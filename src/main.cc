@@ -275,7 +275,8 @@ int main() {
       DrawText(std::to_string(actual_fps).c_str(), 10, 25, 20, BLACK);
 
       if (paused) {
-        DrawText("PAUSED", tgt_window_width / 2,
+        int text_width = MeasureText("PAUSED", 30);
+        DrawText("PAUSED", tgt_window_width / 2 - text_width / 2,
                  tgt_window_height / 2.0f + (std::sin(GetTime()) * 100) - 50,
                  30, BLACK);
       }
