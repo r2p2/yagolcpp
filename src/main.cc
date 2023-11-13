@@ -97,7 +97,7 @@ private:
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] +=
         2;
-    array[i] |= 0x01;
+    array[i] += 1;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] +=
         2;
 
@@ -124,7 +124,7 @@ private:
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] -=
         2;
-    array[i] &= ~0x01;
+    array[i] -= 1;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] -=
         2;
 
