@@ -49,7 +49,7 @@ public:
 
   void clear(int64_t x, int64_t y) { clear(to_index(x, y, width())); }
 
-  void clear(int64_t i) { _array_curr[i] &= 0x7f; }
+  void clear(int64_t i) { _clear(i, _array_curr); }
 
   void clear() { memset(_array, 0x00, width() * height()); }
 
