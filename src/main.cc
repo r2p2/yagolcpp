@@ -13,9 +13,9 @@
 #include <iostream>
 #endif
 
-constexpr bool is_alive(uint8_t cell) { return cell & 0x80; }
+constexpr bool is_alive(uint8_t cell) { return cell & 0x01; }
 
-constexpr uint8_t neighbors(uint8_t cell) { return cell & 0x7f; }
+constexpr uint8_t neighbors(uint8_t cell) { return cell >> 1; }
 
 constexpr std::pair<int64_t, int64_t> from_index(int64_t i, int64_t width) {
   return std::make_pair(i % width, i / width);
@@ -94,57 +94,57 @@ public:
 
 private:
   void _set(int64_t i, std::span<uint8_t> &array) {
-    if (array[i] & 0x80)
+    if (is_alive(array[i]))
       return;
 
     auto const &[x, y] = from_index(i, width());
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y - 1),
-                   width())] += 1;
+                   width())] += 2;
     array[to_index(wrap(0, width(), x), wrap(0, height(), y - 1), width())] +=
-        1;
+        2;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y - 1),
-                   width())] += 1;
+                   width())] += 2;
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] +=
-        1;
-    array[i] |= 0x80;
+        2;
+    array[i] |= 0x01;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] +=
-        1;
+        2;
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y + 1),
-                   width())] += 1;
+                   width())] += 2;
     array[to_index(wrap(0, width(), x), wrap(0, height(), y + 1), width())] +=
-        1;
+        2;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y + 1),
-                   width())] += 1;
+                   width())] += 2;
   }
 
   void _clear(int64_t i, std::span<uint8_t> &array) {
-    if (!(array[i] & 0x80))
+    if (!is_alive(array[i]))
       return;
 
     auto const &[x, y] = from_index(i, width());
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y - 1),
-                   width())] -= 1;
+                   width())] -= 2;
     array[to_index(wrap(0, width(), x), wrap(0, height(), y - 1), width())] -=
-        1;
+        2;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y - 1),
-                   width())] -= 1;
+                   width())] -= 2;
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] -=
-        1;
-    array[i] &= 0x7f;
+        2;
+    array[i] &= ~0x01;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] -=
-        1;
+        2;
 
     array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y + 1),
-                   width())] -= 1;
+                   width())] -= 2;
     array[to_index(wrap(0, width(), x), wrap(0, height(), y + 1), width())] -=
-        1;
+        2;
     array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y + 1),
-                   width())] -= 1;
+                   width())] -= 2;
   }
 
 private:
@@ -177,10 +177,10 @@ void texture_reload(Texture &texture, Image &image) {
 }
 
 int main() {
-  static_assert(is_alive(0x82), "should be alive");
+  static_assert(is_alive(0x03), "should be alive");
   static_assert(!is_alive(0x02), "should not be alive");
-  static_assert(neighbors(0x82) == 2, "should be 2");
-  static_assert(neighbors(0x03) == 3, "should be 3");
+  static_assert(neighbors(0x04) == 2, "should be 2");
+  static_assert(neighbors(0x06) == 3, "should be 3");
   static_assert(wrap(0, 10, 5) == 5, "should be 5");
   static_assert(wrap(0, 10, 0) == 0, "should be 0");
   static_assert(wrap(0, 10, 10) == 0, "should be 0");
@@ -249,7 +249,7 @@ int main() {
     for (std::size_t i = 0; i < array_size; ++i) {
       static uint32_t const colors[] = {0xFFFFFFFF, 0xFF000000};
       reinterpret_cast<uint32_t *>(screen_image.data)[i] =
-          colors[(array[i] & 0x80) >> 7];
+          colors[is_alive(array[i])];
     }
 #ifdef DEBUG
     auto const ts_end_image_update = GetTime();
