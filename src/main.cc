@@ -31,9 +31,7 @@ constexpr int64_t wrap(int64_t start, int64_t limit, int64_t n) {
 
 class GOL {
 public:
-  GOL(int64_t width, int64_t height) : _rng_gen(std::random_device{}()) {
-    resize(width, height);
-  }
+  GOL(int64_t width, int64_t height) { resize(width, height); }
 
   ~GOL() {
     if (_array)
@@ -53,16 +51,7 @@ public:
 
   void clear(int64_t i) { _array_curr[i] &= 0x7f; }
 
-  void fill(int64_t p) {
-    std::uniform_int_distribution<> distrib(0, 100);
-    for (int64_t i = 0; i < _array_curr.size(); ++i) {
-      if (distrib(_rng_gen) <= p) {
-        set(i);
-      } else {
-        clear(i);
-      }
-    }
-  }
+  void clear() { memset(_array, 0x00, width() * height()); }
 
   void resize(int64_t width, int64_t height) {
     if (_array)
@@ -154,8 +143,6 @@ private:
   uint8_t *_array = 0;
   std::span<uint8_t> _array_curr;
   std::span<uint8_t> _array_next;
-
-  std::mt19937 _rng_gen;
 };
 
 Image image_new(int width, int height) {
@@ -195,6 +182,16 @@ int main() {
   bool paused = false;
   GOL gol(tgt_window_width / scalar, tgt_window_height / scalar);
 
+  { // initial randomization
+    std::mt19937 rng_gen(std::random_device{}());
+    std::uniform_int_distribution<> distrib(0, 100);
+    for (std::size_t i = 0; i < gol.array().size(); ++i) {
+      if (distrib(rng_gen) <= 50 /* percent */) {
+        gol.set(i);
+      }
+    }
+  }
+
   SetTraceLogLevel(LOG_ERROR);
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(tgt_window_width, tgt_window_height, "yagolcpp");
@@ -219,14 +216,8 @@ int main() {
       auto const mouse_pos = GetMousePosition();
       gol.clear(mouse_pos.x / scalar, mouse_pos.y / scalar);
     }
-    if (IsKeyPressed(KEY_ONE)) {
-      gol.fill(10);
-    }
-    if (IsKeyPressed(KEY_TWO)) {
-      gol.fill(20);
-    }
-    if (IsKeyPressed(KEY_THREE)) {
-      gol.fill(30);
+    if (IsKeyPressed(KEY_C)) {
+      gol.clear();
     }
     if (IsKeyPressed(KEY_SPACE)) {
       paused = !paused;
