@@ -9,6 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(raylib 4.2.0 REQUIRED)
 
+add_executable(bench
+	src/bench.cc
+)
+
 add_executable(yagolcpp
 	src/main.cc
 )
