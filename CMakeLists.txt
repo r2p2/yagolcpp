@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(yagolcpp)
 
+option(SLOW "Add checks for safer operation" OFF)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,3 +15,9 @@ add_executable(yagolcpp
 target_link_libraries(yagolcpp
 	PRIVATE raylib
 )
+if (${SLOW})
+	target_compile_definitions(yagolcpp
+		PRIVATE -DSLOW
+	)
+endif()
+

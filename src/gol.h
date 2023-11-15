@@ -1,8 +1,9 @@
 #pragma once
 
+#include "types.h"
+
 #include <cstdint>
 #include <utility>
-#include <span>
 #include <cstring>
 
 constexpr bool is_alive(uint8_t cell) { return cell & 0x01; }
@@ -33,7 +34,7 @@ public:
   int64_t width() const { return _width; }
   int64_t height() const { return _height; }
 
-  std::span<uint8_t> const array() const { return _array_curr; }
+  Span<uint8_t> const array() const { return _array_curr; }
 
   void set(int64_t x, int64_t y) { set(to_index(x, y, width())); }
 
@@ -52,9 +53,9 @@ public:
     _width = width;
     _height = height;
     _array = new uint8_t[_width * _height * 2]{};
-    _array_curr = std::span<uint8_t>(_array, _width * _height);
+    _array_curr = Span<uint8_t>(_array, _width * _height);
     _array_next =
-        std::span<uint8_t>(_array + _width * _height, width * _height);
+       Span<uint8_t>(_array + _width * _height, width * _height);
   }
 
   void iterate() {
@@ -74,7 +75,7 @@ public:
   }
 
 private:
-  void _set(int64_t i, std::span<uint8_t> &array) {
+  void _set(int64_t i, Span<uint8_t> &array) {
     if (is_alive(array[i]))
       return;
 
@@ -101,7 +102,7 @@ private:
                    width())] += 2;
   }
 
-  void _clear(int64_t i, std::span<uint8_t> &array) {
+  void _clear(int64_t i, Span<uint8_t> &array) {
     if (!is_alive(array[i]))
       return;
 
@@ -133,6 +134,6 @@ private:
   int64_t _height = 0;
 
   uint8_t *_array = 0;
-  std::span<uint8_t> _array_curr;
-  std::span<uint8_t> _array_next;
+  Span<uint8_t> _array_curr;
+  Span<uint8_t> _array_next;
 };
