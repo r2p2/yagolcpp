@@ -228,19 +228,14 @@ int main() {
       }
     }
 
-    auto const timedelta = GetFrameTime() * 100;
-    auto const actual_fps = 1.0 / GetFrameTime();
-
-    auto const &array = gol.array();
-
 #ifdef DEBUG
     auto const ts_start_image_update = GetTime();
 #endif
+    auto const &array = gol.array();
     auto const array_size = array.size();
     for (std::size_t i = 0; i < array_size; ++i) {
-      static uint32_t const colors[] = {0xFFFFFFFF, 0xFF000000};
       reinterpret_cast<uint32_t *>(screen_image.data)[i] =
-          colors[is_alive(array[i])];
+          !is_alive(array[i]) * 0x00FFFFFF + 0xFF000000;
     }
 #ifdef DEBUG
     auto const ts_end_image_update = GetTime();
@@ -271,8 +266,8 @@ int main() {
                        .height = (float)tgt_window_height};
       DrawTexturePro(screen_texture, camera, screen, {0, 0}, 0.0f, WHITE);
 
-      DrawText(std::to_string(timedelta).c_str(), 10, 10, 20, BLACK);
-      DrawText(std::to_string(actual_fps).c_str(), 10, 25, 20, BLACK);
+      DrawText(std::to_string(GetFrameTime() * 100).c_str(), 10, 10, 20, BLACK);
+      DrawText(std::to_string(1.0 / GetFrameTime()).c_str(), 10, 25, 20, BLACK);
 
       if (paused) {
         int text_width = MeasureText("PAUSED", 30);
