@@ -34,12 +34,6 @@ int main() {
   static_assert(!is_alive(0x02), "should not be alive");
   static_assert(neighbors(0x04) == 2, "should be 2");
   static_assert(neighbors(0x06) == 3, "should be 3");
-  static_assert(wrap(0, 10, 5) == 5, "should be 5");
-  static_assert(wrap(0, 10, 0) == 0, "should be 0");
-  static_assert(wrap(0, 10, 10) == 0, "should be 0");
-  static_assert(wrap(0, 10, 11) == 1, "should be 0");
-  static_assert(wrap(0, 10, -1) == 9, "should be 9");
-  static_assert(wrap(0, 10, -2) == 8, "should be 9");
 
   int64_t tgt_window_width = 800;
   int64_t tgt_window_height = 600;

@@ -3,8 +3,8 @@
 #include "types.h"
 
 #include <cstdint>
-#include <utility>
 #include <cstring>
+#include <utility>
 
 constexpr bool is_alive(uint8_t cell) { return cell & 0x01; }
 
@@ -16,10 +16,6 @@ constexpr std::pair<int64_t, int64_t> from_index(int64_t i, int64_t width) {
 
 constexpr int64_t to_index(int64_t x, int64_t y, int64_t width) {
   return y * width + x;
-}
-
-constexpr int64_t wrap(int64_t start, int64_t limit, int64_t n) {
-  return ((n % (limit - start)) + (limit - start)) % (limit - start) + start;
 }
 
 class GOL {
@@ -54,8 +50,7 @@ public:
     _height = height;
     _array = new uint8_t[_width * _height * 2]{};
     _array_curr = Span<uint8_t>(_array, _width * _height);
-    _array_next =
-       Span<uint8_t>(_array + _width * _height, width * _height);
+    _array_next = Span<uint8_t>(_array + _width * _height, width * _height);
   }
 
   void iterate() {
@@ -81,25 +76,22 @@ private:
 
     auto const &[x, y] = from_index(i, width());
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y - 1),
-                   width())] += 2;
-    array[to_index(wrap(0, width(), x), wrap(0, height(), y - 1), width())] +=
-        2;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y - 1),
-                   width())] += 2;
+    auto const xp = x - 1 >= 0 ? x - 1 : width() - 1;
+    auto const xn = x + 1 < width() ? x + 1 : 0;
+    auto const yp = y - 1 >= 0 ? y - 1 : height() - 1;
+    auto const yn = y + 1 < height() ? y + 1 : 0;
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] +=
-        2;
+    array[to_index(xp, yp, width())] += 2;
+    array[to_index(x, yp, width())] += 2;
+    array[to_index(xn, yp, width())] += 2;
+
+    array[to_index(xp, y, width())] += 2;
     array[i] += 1;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] +=
-        2;
+    array[to_index(xn, y, width())] += 2;
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y + 1),
-                   width())] += 2;
-    array[to_index(wrap(0, width(), x), wrap(0, height(), y + 1), width())] +=
-        2;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y + 1),
-                   width())] += 2;
+    array[to_index(xp, yn, width())] += 2;
+    array[to_index(x, yn, width())] += 2;
+    array[to_index(xn, yn, width())] += 2;
   }
 
   void _clear(int64_t i, Span<uint8_t> &array) {
@@ -108,25 +100,22 @@ private:
 
     auto const &[x, y] = from_index(i, width());
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y - 1),
-                   width())] -= 2;
-    array[to_index(wrap(0, width(), x), wrap(0, height(), y - 1), width())] -=
-        2;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y - 1),
-                   width())] -= 2;
+    auto const xp = x - 1 >= 0 ? x - 1 : width() - 1;
+    auto const xn = x + 1 < width() ? x + 1 : 0;
+    auto const yp = y - 1 >= 0 ? y - 1 : height() - 1;
+    auto const yn = y + 1 < height() ? y + 1 : 0;
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y), width())] -=
-        2;
+    array[to_index(xp, yp, width())] -= 2;
+    array[to_index(x, yp, width())] -= 2;
+    array[to_index(xn, yp, width())] -= 2;
+
+    array[to_index(xp, y, width())] -= 2;
     array[i] -= 1;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y), width())] -=
-        2;
+    array[to_index(xn, y, width())] -= 2;
 
-    array[to_index(wrap(0, width(), x - 1), wrap(0, height(), y + 1),
-                   width())] -= 2;
-    array[to_index(wrap(0, width(), x), wrap(0, height(), y + 1), width())] -=
-        2;
-    array[to_index(wrap(0, width(), x + 1), wrap(0, height(), y + 1),
-                   width())] -= 2;
+    array[to_index(xp, yn, width())] -= 2;
+    array[to_index(x, yn, width())] -= 2;
+    array[to_index(xn, yn, width())] -= 2;
   }
 
 private:
