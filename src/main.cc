@@ -110,9 +110,7 @@ int main() {
 #ifdef DEBUG
     auto const ts_start_update_texture = GetTime();
 #endif
-    Color *const pixels = LoadImageColors(screen_image);
-    UpdateTexture(screen_texture, pixels);
-    UnloadImageColors(pixels);
+    UpdateTexture(screen_texture, screen_image.data);
 #ifdef DEBUG
     auto const ts_end_update_texture = GetTime();
 #endif
