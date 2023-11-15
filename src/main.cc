@@ -29,6 +29,16 @@ void texture_reload(Texture &texture, Image &image) {
   texture = LoadTextureFromImage(image);
 }
 
+void random_fill(GOL &gol) {
+  std::mt19937 rng_gen(std::random_device{}());
+  std::uniform_int_distribution<> distrib(0, 100);
+  for (std::size_t i = 0; i < gol.array().size(); ++i) {
+    if (distrib(rng_gen) <= 50 /* percent */) {
+      gol.set(i);
+    }
+  }
+}
+
 int main() {
   static_assert(is_alive(0x03), "should be alive");
   static_assert(!is_alive(0x02), "should not be alive");
@@ -43,13 +53,7 @@ int main() {
   GOL gol(tgt_window_width / scalar, tgt_window_height / scalar);
 
   { // initial randomization
-    std::mt19937 rng_gen(std::random_device{}());
-    std::uniform_int_distribution<> distrib(0, 100);
-    for (std::size_t i = 0; i < gol.array().size(); ++i) {
-      if (distrib(rng_gen) <= 50 /* percent */) {
-        gol.set(i);
-      }
-    }
+    random_fill(gol);
   }
 
   SetTraceLogLevel(LOG_ERROR);
@@ -65,6 +69,8 @@ int main() {
       tgt_window_width = GetRenderWidth();
       tgt_window_height = GetRenderHeight();
       gol.resize(tgt_window_width / scalar, tgt_window_height / scalar);
+      random_fill(gol);
+
       image_resize(screen_image, gol.width(), gol.height());
       texture_reload(screen_texture, screen_image);
     }
@@ -78,6 +84,9 @@ int main() {
     }
     if (IsKeyPressed(KEY_C)) {
       gol.clear();
+    }
+    if (IsKeyPressed(KEY_R)) {
+      random_fill(gol);
     }
     if (IsKeyPressed(KEY_SPACE)) {
       paused = !paused;
