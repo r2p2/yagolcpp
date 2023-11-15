@@ -74,30 +74,17 @@ private:
     if (is_alive(array[i]))
       return;
 
-    auto const &[x, y] = from_index(i, width());
-
-    auto const xp = x - 1 >= 0 ? x - 1 : width() - 1;
-    auto const xn = x + 1 < width() ? x + 1 : 0;
-    auto const yp = y - 1 >= 0 ? y - 1 : height() - 1;
-    auto const yn = y + 1 < height() ? y + 1 : 0;
-
-    array[to_index(xp, yp, width())] += 2;
-    array[to_index(x, yp, width())] += 2;
-    array[to_index(xn, yp, width())] += 2;
-
-    array[to_index(xp, y, width())] += 2;
-    array[i] += 1;
-    array[to_index(xn, y, width())] += 2;
-
-    array[to_index(xp, yn, width())] += 2;
-    array[to_index(x, yn, width())] += 2;
-    array[to_index(xn, yn, width())] += 2;
+    _change(i, array, +1);
   }
 
   void _clear(int64_t i, Span<uint8_t> &array) {
     if (!is_alive(array[i]))
       return;
 
+    _change(i, array, -1);
+  }
+
+  void _change(int64_t i, Span<uint8_t>& array, int dir) {
     auto const &[x, y] = from_index(i, width());
 
     auto const xp = x - 1 >= 0 ? x - 1 : width() - 1;
@@ -105,17 +92,19 @@ private:
     auto const yp = y - 1 >= 0 ? y - 1 : height() - 1;
     auto const yn = y + 1 < height() ? y + 1 : 0;
 
-    array[to_index(xp, yp, width())] -= 2;
-    array[to_index(x, yp, width())] -= 2;
-    array[to_index(xn, yp, width())] -= 2;
+    auto const nb_change = 2*dir;
 
-    array[to_index(xp, y, width())] -= 2;
-    array[i] -= 1;
-    array[to_index(xn, y, width())] -= 2;
+    array[to_index(xp, yp, width())] += nb_change;
+    array[to_index(x, yp, width())] += nb_change;
+    array[to_index(xn, yp, width())] += nb_change;
 
-    array[to_index(xp, yn, width())] -= 2;
-    array[to_index(x, yn, width())] -= 2;
-    array[to_index(xn, yn, width())] -= 2;
+    array[to_index(xp, y, width())] += nb_change;
+    array[i] += dir;
+    array[to_index(xn, y, width())] += nb_change;
+
+    array[to_index(xp, yn, width())] += nb_change;
+    array[to_index(x, yn, width())] += nb_change;
+    array[to_index(xn, yn, width())] += nb_change;
   }
 
 private:
