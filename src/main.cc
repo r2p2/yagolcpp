@@ -47,7 +47,7 @@ int main() {
 
   int64_t tgt_window_width = 800;
   int64_t tgt_window_height = 600;
-  int64_t scalar = 2;
+  int64_t scalar = 1;
 
   bool paused = false;
   GOL gol(tgt_window_width / scalar, tgt_window_height / scalar);
