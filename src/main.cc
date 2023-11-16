@@ -45,8 +45,8 @@ int main() {
   static_assert(neighbors(0x04) == 2, "should be 2");
   static_assert(neighbors(0x06) == 3, "should be 3");
 
-  int64_t tgt_window_width = 800;
-  int64_t tgt_window_height = 600;
+  int64_t tgt_window_width = 800;  // superfluous -> use screen.width
+  int64_t tgt_window_height = 600; // superfluous -> use screen.height
   int64_t scalar = 1;
 
   bool paused = false;
@@ -60,14 +60,36 @@ int main() {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(tgt_window_width, tgt_window_height, "yagolcpp");
 
+  Rectangle screen{.x = 0,
+                   .y = 0,
+                   .width = (float)tgt_window_width,
+                   .height = (float)tgt_window_height};
+
+  Rectangle camera{.x = 0,
+                   .y = 0,
+                   .width = (float)gol.width(),
+                   .height = (float)gol.height()};
+
+  Rectangle camera_target{.x = 0,
+                          .y = 0,
+                          .width = (float)gol.width(),
+                          .height = (float)gol.height()};
+
   Image screen_image = image_new(gol.width(), gol.height());
   Texture2D screen_texture = LoadTextureFromImage(screen_image);
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
+    auto const frame_time = GetFrameTime();
     if (IsWindowResized()) {
       tgt_window_width = GetRenderWidth();
       tgt_window_height = GetRenderHeight();
+      screen.width = tgt_window_width;
+      screen.height = tgt_window_height;
+      camera_target.width = screen.width;
+      camera_target.height = screen.height;
+      camera.width = screen.width;
+      camera.height = screen.height;
       gol.resize(tgt_window_width / scalar, tgt_window_height / scalar);
       random_fill(gol);
 
@@ -75,12 +97,28 @@ int main() {
       texture_reload(screen_texture, screen_image);
     }
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      auto const mouse_pos = GetMousePosition();
-      gol.set(mouse_pos.x / scalar, mouse_pos.y / scalar);
+      Vector2 mouse_delta = GetMouseDelta();
+      camera_target.x -= camera.width * mouse_delta.x / screen.width;
+      camera_target.y -= camera.height * mouse_delta.y / screen.height;
+    }
+    if (IsMouseButtonUp(MOUSE_BUTTON_LEFT)) {
+      camera_target.x = camera_target.x;
+      camera_target.y = camera_target.y;
     }
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
       auto const mouse_pos = GetMousePosition();
       gol.clear(mouse_pos.x / scalar, mouse_pos.y / scalar);
+    }
+    if (IsKeyPressed(KEY_SPACE)) {
+      auto const mouse_pos = GetMousePosition();
+      auto const x = camera.x + camera.width * mouse_pos.x / screen.width;
+      auto const y = camera.y + camera.height * mouse_pos.y / screen.height;
+
+      if (gol.is_set(x, y)) {
+        gol.clear(x, y);
+      } else {
+        gol.set(x, y);
+      }
     }
     if (IsKeyPressed(KEY_C)) {
       gol.clear();
@@ -88,12 +126,39 @@ int main() {
     if (IsKeyPressed(KEY_R)) {
       random_fill(gol);
     }
-    if (IsKeyPressed(KEY_SPACE)) {
+    if (IsKeyPressed(KEY_P)) {
       paused = !paused;
     }
     if (IsKeyPressed(KEY_RIGHT)) {
       if (paused) {
         gol.iterate();
+      }
+    }
+
+    { // tug camera along
+      auto const mouse_wheel_move = GetMouseWheelMove();
+      if (mouse_wheel_move) {
+        auto const camera_delta_width =
+            camera.width * 0.10 * mouse_wheel_move; // mouse_wheel_move;
+        auto const camera_delta_height =
+            camera.height * 0.10 * mouse_wheel_move; // mouse_wheel_move;
+
+        Vector2 mouse_pos = GetMousePosition();
+        camera_target.x += (mouse_pos.x / screen.width) * camera_delta_width;
+        camera_target.y += (mouse_pos.y / screen.height) * camera_delta_height;
+
+        camera_target.width -= camera_delta_width;
+        camera_target.height -= camera_delta_height;
+      }
+      camera.x += (camera_target.x - camera.x) * 5 * frame_time;
+      camera.y += (camera_target.y - camera.y) * 5 * frame_time;
+      camera.width += (camera_target.width - camera.width) * 5 * frame_time;
+      camera.height += (camera_target.height - camera.height) * 5 * frame_time;
+
+      // wrap around
+      if (camera_target.x == camera.y && camera_target.y == camera.y) {
+        camera.x = (int)camera.x % (int)screen.width;
+        camera.y = (int)camera.y % (int)screen.height;
       }
     }
 
@@ -123,14 +188,6 @@ int main() {
 #endif
     BeginDrawing();
     {
-      Rectangle camera{.x = 0,
-                       .y = 0,
-                       .width = (float)gol.width(),
-                       .height = (float)gol.height()};
-      Rectangle screen{.x = 0,
-                       .y = 0,
-                       .width = (float)tgt_window_width,
-                       .height = (float)tgt_window_height};
       DrawTexturePro(screen_texture, camera, screen, {0, 0}, 0.0f, WHITE);
 
       DrawText(std::to_string(GetFrameTime() * 100).c_str(), 10, 10, 20, BLACK);

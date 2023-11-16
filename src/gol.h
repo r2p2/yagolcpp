@@ -32,6 +32,10 @@ public:
 
   Span<uint8_t> const array() const { return _array_curr; }
 
+  bool is_set(int64_t x, int64_t y) const {
+    return is_alive(_array_curr[to_index(x, y, width())]);
+  }
+
   void set(int64_t x, int64_t y) { set(to_index(x, y, width())); }
 
   void set(int64_t i) { _set(i, _array_curr); }
@@ -84,7 +88,7 @@ private:
     _change(i, array, -1);
   }
 
-  void _change(int64_t i, Span<uint8_t>& array, int dir) {
+  void _change(int64_t i, Span<uint8_t> &array, int dir) {
     auto const &[x, y] = from_index(i, width());
 
     auto const xp = x - 1 >= 0 ? x - 1 : width() - 1;
@@ -92,7 +96,7 @@ private:
     auto const yp = y - 1 >= 0 ? y - 1 : height() - 1;
     auto const yn = y + 1 < height() ? y + 1 : 0;
 
-    auto const nb_change = 2*dir;
+    auto const nb_change = 2 * dir;
 
     array[to_index(xp, yp, width())] += nb_change;
     array[to_index(x, yp, width())] += nb_change;
